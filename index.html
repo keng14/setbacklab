@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#0B1120">
+  <title>SetbackLab • กฎหมายระยะร่น พ.ร.บ. ควบคุมอาคาร</title>
+  <link rel="icon" href="data:,">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+</head>
+<body>
+
+<div id="welcome" class="welcome" role="dialog" aria-modal="true" aria-labelledby="welTitle">
+  <div class="wel-card">
+    <div class="brand-mark wel-mark" aria-hidden="true">▦</div>
+    <h2 id="welTitle" data-i18n="welcomeTitle">ยินดีต้อนรับสู่ SetbackLab</h2>
+    <div class="wel-step" data-step="1">
+      <p class="wel-sub" data-i18n="pickLang">เลือกภาษา</p>
+      <div class="wel-langs">
+        <button type="button" class="btn btn-primary wel-lang" data-pick="th">ภาษาไทย</button>
+        <button type="button" class="btn wel-lang" data-pick="en">English</button>
+      </div>
+    </div>
+    <div class="wel-step" data-step="2" hidden>
+      <p class="wel-sub" data-i18n="howTitle">วิธีใช้งานแบบเร็ว</p>
+      <ol class="wel-how">
+        <li data-i18n="how1">กำหนดที่ดิน</li><li data-i18n="how2">เลือกประเภทอาคาร</li>
+        <li data-i18n="how3">ดูผลผ่าน/ไม่ผ่าน</li><li data-i18n="how4">ลากหมุน 3D</li>
+      </ol>
+      <button type="button" class="btn btn-primary wel-go" id="welGo"><span data-i18n="startApp">เริ่มใช้งาน</span></button>
+    </div>
+    <div class="wel-step" data-step="3" hidden>
+      <p class="wel-sub" data-i18n="secTemplate">แบบสำเร็จรูป</p>
+      <p class="muted" data-i18n="templateNote">เลือกอาคารตัวอย่างเพื่อเริ่มได้เร็ว หรือเริ่มจากที่ดินเปล่าแล้วปรับเอง</p>
+      <div class="preset-grid" role="group" aria-label="Templates">
+        <button type="button" class="chip" data-template="house"><span data-i18n="catHouse">บ้าน 2 ชั้น</span></button>
+        <button type="button" class="chip" data-template="townhome"><span data-i18n="catTownhome">ทาวน์โฮม</span></button>
+        <button type="button" class="chip" data-template="condo"><span data-i18n="catCondo">คอนโด/หอพัก</span></button>
+        <button type="button" class="chip" data-template="blank"><span data-i18n="tplBlank">เริ่มเอง (ที่ดินเปล่า)</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">▦</div>
+    <div class="brand-text">
+      <h1 data-i18n="appTitle">กฎหมายระยะร่น (Setback)</h1>
+      <p data-i18n="appSub">กฎกระทรวง ฉบับที่ 55 • บ้าน ทาวน์โฮม อาคารพาณิชย์ คอนโด</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button type="button" class="btn btn-ghost" id="btnHelp" aria-haspopup="dialog"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg><span data-i18n="helpBtn">วิธีใช้</span></button>
+    <div class="seg" role="group" aria-label="ภาษา / Language">
+      <button type="button" data-lang="th" class="seg-btn is-active" aria-pressed="true">TH</button>
+      <button type="button" data-lang="en" class="seg-btn" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+
+<main class="layout">
+  <!-- LEFT: inspector -->
+  <section class="inspector" aria-label="Inputs">
+    <div id="statusCard" class="status-card is-pass" role="status" aria-live="polite">
+      <div class="status-icon" id="statusIcon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></div>
+      <div>
+        <h2 id="statusTitle"></h2>
+        <p id="statusSub"></p>
+      </div>
+    </div>
+
+    <p class="disclaimer" role="note" data-i18n="disclaimer">ผลเป็นการประเมินเบื้องต้นตามกฎกระทรวง ฉบับที่ 55 (แก้ไขถึงฉบับที่ 68) ต้องตรวจกับเอกสารจริงและข้อบัญญัติท้องถิ่นก่อนใช้งานจริง</p>
+    <div class="project-bar">
+      <button type="button" class="btn btn-ghost" id="btnSaveProject" data-i18n="saveProject">บันทึกโปรเจกต์ (.json)</button>
+      <label class="btn btn-ghost file-btn"><span data-i18n="loadProject">เปิดโปรเจกต์ (.json)</span><input type="file" id="loadProjectFile" accept="application/json,.json"></label>
+      <p id="projectMsg" class="project-msg" role="status" aria-live="polite"></p>
+    </div>
+
+    <details class="card" open>
+      <summary data-i18n="howTitle">วิธีใช้งานแบบเร็ว</summary>
+      <ol class="how-list">
+        <li data-i18n="how1">กำหนดที่ดิน ถนน และทิศ ในหัวข้อ "ที่ดินและบริบท"</li>
+        <li data-i18n="how2">เลือกประเภทอาคาร แล้วปรับขนาดและเลื่อนตำแหน่ง</li>
+        <li data-i18n="how3">ดูผลผ่าน/ไม่ผ่านตามกฎกระทรวง ฉบับที่ 55 ทันที</li>
+        <li data-i18n="how4">ลากหมุน 3D, เปิดเต็มจอ, เลื่อนสไลด์เดอร์แดด และเปิดลมไหลใน Site analysis</li>
+      </ol>
+    </details>
+
+    <details class="card" open>
+      <summary data-i18n="secSite">ที่ดินและบริบท</summary>
+      <p class="sub-title first" data-i18n="subLot">ขนาดที่ดิน</p>
+      <div class="grid-2">
+        <label><span data-i18n="lotWidth">แปลง กว้าง (ม.)</span>
+          <input type="number" step="0.5" min="1" data-field="lotWidth"></label>
+        <label><span data-i18n="lotDepth">แปลง ลึก (ม.)</span>
+          <input type="number" step="0.5" min="1" data-field="lotDepth"></label>
+        <label><span data-i18n="roadWidth">ความกว้างถนนหน้า (ม.)</span>
+          <input type="number" step="0.5" min="1" data-field="roadWidth"></label>
+        <p class="sub-title span-2" data-i18n="subRoads">ถนน</p>
+        <fieldset class="span-2 road-sides">
+          <legend data-i18n="roadSidesLegend">ถนนรอง ติดด้านไหนบ้าง</legend>
+          <span class="road-main" data-i18n="mainRoadNote">ถนนหลัก: บน (ด้านหน้าแปลง)</span>
+          <div class="side-opt">
+            <label class="check"><input type="checkbox" data-field="secLeft"> <span data-i18n="sideLeft">ซ้าย</span></label>
+            <label class="side-w" data-show-when="secLeft"><span data-i18n="roadWidthShort">กว้าง (ม.)</span>
+              <input type="number" step="0.5" min="1" data-field="secLeftW"></label>
+          </div>
+          <div class="side-opt">
+            <label class="check"><input type="checkbox" data-field="secRight"> <span data-i18n="sideRight">ขวา</span></label>
+            <label class="side-w" data-show-when="secRight"><span data-i18n="roadWidthShort">กว้าง (ม.)</span>
+              <input type="number" step="0.5" min="1" data-field="secRightW"></label>
+          </div>
+          <div class="side-opt">
+            <label class="check"><input type="checkbox" data-field="secRear"> <span data-i18n="sideRear">ล่าง (ด้านหลัง)</span></label>
+            <label class="side-w" data-show-when="secRear"><span data-i18n="roadWidthShort">กว้าง (ม.)</span>
+              <input type="number" step="0.5" min="1" data-field="secRearW"></label>
+          </div>
+        </fieldset>
+        <p class="sub-title span-2" data-i18n="subZoning">ผังเมือง</p>
+        <label><span data-i18n="zoneLabel">พื้นที่</span>
+          <select data-field="zone">
+            <option value="other" data-i18n="zoneOther">ต่างจังหวัด / นอก กทม.</option>
+            <option value="bkk" data-i18n="zoneBkk">กรุงเทพมหานคร (กทม.)</option>
+          </select></label>
+        <label class="span-2"><span data-i18n="zoning">ผังเมืองสี</span>
+          <select data-field="zoningType">
+            <option value="yellow">Yellow · สีเหลือง (อยู่อาศัยหนาแน่นน้อย)</option><option value="orange">Orange · สีส้ม (อยู่อาศัยหนาแน่นปานกลาง)</option>
+            <option value="brown">Brown · สีน้ำตาล (อยู่อาศัยหนาแน่นมาก)</option><option value="red">Red · สีแดง (พาณิชยกรรม)</option>
+          </select></label>
+      </div>
+      <label class="check"><input type="checkbox" data-field="linkZoning"> <span data-i18n="linkZoning">เชื่อมเกณฑ์ FAR / OSR ตามผังเมือง</span></label>
+      <p class="sub-title" data-i18n="subOrient">ทิศของที่ดิน</p>
+      <label><span data-i18n="siteBearing">ทิศของที่ดิน (ด้านหน้าแปลงหันไป)</span>
+        <select data-field="siteBearing">
+          <option value="0">N เหนือ</option><option value="45">NE ตะวันออกเฉียงเหนือ</option><option value="90">E ออก</option><option value="135">SE ตะวันออกเฉียงใต้</option>
+          <option value="180">S ใต้</option><option value="225">SW ตะวันตกเฉียงใต้</option><option value="270">W ตก</option><option value="315">NW ตะวันตกเฉียงเหนือ</option>
+        </select></label>
+      <p class="sub-title" data-i18n="subShow">แสดงในภาพ</p>
+      <label class="check"><input type="checkbox" data-field="hasNeighbors"> <span data-i18n="hasNeighbors">แสดงอาคารไกล้เคียง</span></label>
+      <label class="check"><input type="checkbox" data-field="showContext"> <span data-i18n="showContext">แสดงอาคารบริบทและต้นไม้</span></label>
+      <p class="sub-title" data-i18n="subContext">บริบท: เพิ่ม/ลบ อาคารและต้นไม้</p>
+      <div class="btn-row">
+        <button type="button" class="btn" data-pick3d="building" aria-pressed="false"><span data-i18n="ctxAddBuilding">+ อาคาร</span></button>
+        <button type="button" class="btn" data-pick3d="tree" aria-pressed="false"><span data-i18n="ctxAddTree">+ ต้นไม้</span></button>
+        <button type="button" class="btn" data-pick3d="del" aria-pressed="false"><span data-i18n="pickDelete">ลบ (จิ้มที่วัตถุ)</span></button>
+      </div>
+      <p class="muted pick-help" data-i18n="pickHelp">กดปุ่มแล้วจิ้มตำแหน่งในมุมมอง 3D เพื่อวางหรือลบ</p>
+      <div class="btn-row">
+        <button type="button" class="btn" data-ctx="clear" data-i18n="ctxClear">ลบทั้งหมด</button>
+        <button type="button" class="btn" data-ctx="reset" data-i18n="ctxReset">รีเซ็ตอัตโนมัติ</button>
+      </div>
+      <details class="ctx-details" id="ctxDetails">
+        <summary><span data-i18n="ctxList">รายการบริบท</span> (<span id="ctxCount">0</span>)</summary>
+        <div id="ctxList" class="ctx-list"></div>
+      </details>
+
+      <p class="sub-title" data-i18n="subWater">แหล่งน้ำ (แม่น้ำ/คลอง)</p>
+      <label class="check"><input type="checkbox" data-field="riverLeft"> <span data-i18n="riverLeft">ติดแหล่งน้ำ ด้านซ้าย</span></label>
+      <div class="grid-2" data-show-when="riverLeft">
+        <label><span data-i18n="riverWidth">แหล่งน้ำกว้าง (ม.)</span>
+          <input type="number" step="0.5" min="1" data-field="riverLeftW"></label>
+        <label class="check"><input type="checkbox" data-field="bridgeLeft"> <span data-i18n="hasBridge">มีสะพาน</span></label>
+      </div>
+      <label class="check"><input type="checkbox" data-field="riverRight"> <span data-i18n="riverRight">ติดแหล่งน้ำ ด้านขวา</span></label>
+      <div class="grid-2" data-show-when="riverRight">
+        <label><span data-i18n="riverWidth">แหล่งน้ำกว้าง (ม.)</span>
+          <input type="number" step="0.5" min="1" data-field="riverRightW"></label>
+        <label class="check"><input type="checkbox" data-field="bridgeRight"> <span data-i18n="hasBridge">มีสะพาน</span></label>
+      </div>
+      <label class="check"><input type="checkbox" data-field="hasRiver"> <span data-i18n="hasRiver">ติดแม่น้ำ/คลอง (ด้านหลัง)</span></label>
+      <div class="grid-2" data-show-when="hasRiver">
+        <label><span data-i18n="riverWidth">แหล่งน้ำกว้าง (ม.)</span>
+          <input type="number" step="0.5" min="1" data-field="riverWidth"></label>
+        <label class="check"><input type="checkbox" data-field="hasBridge"> <span data-i18n="hasBridge">มีสะพาน</span></label>
+      </div>
+
+      <p class="sub-title" data-i18n="subInfra">โครงสร้างพื้นฐาน</p>
+      <div class="btn-row">
+        <button type="button" class="btn" data-infra="rail" data-i18n="infAddRail">+ ทางรถไฟ</button>
+        <button type="button" class="btn" data-infra="expressway" data-i18n="infAddExp">+ ทางด่วน</button>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn" data-infra="skytrain" data-i18n="infAddSky">+ รถไฟฟ้า</button>
+        <button type="button" class="btn" data-infra="station" data-i18n="infAddStation">+ สถานีรถไฟฟ้า</button>
+        <button type="button" class="btn" data-infra="clear" data-i18n="infClear">ลบทั้งหมด</button>
+      </div>
+      <div id="infraList" class="ctx-list"></div>
+    </details>
+
+    <details class="card">
+      <summary data-i18n="secAnalysis">Site analysis</summary>
+
+      <p class="sub-title first" data-i18n="subSun">แดด (Sun path)</p>
+      <label class="check"><input type="checkbox" data-field="showSun"> <span data-i18n="showSun">แสดงเส้นทางแดด</span></label>
+      <div class="grid-2" data-show-when="showSun">
+        <label><span><span data-i18n="sunHour">เวลา (ตำแหน่งแดด)</span> <b data-sunlabel>10:00</b></span>
+          <input type="range" min="5" max="19" step="0.25" data-field="sunHour" aria-label="sun time"></label>
+        <label><span data-i18n="sunSeason">ฤดูกาล (เส้นทางแดด)</span>
+          <select data-field="sunDecl"><option value="23.4">มิ.ย. · ครีษมายัน</option><option value="0">มี.ค./ก.ย. · วิษุวัต</option><option value="-23.4">ธ.ค. · เหมายัน</option></select></label>
+      </div>
+
+      <p class="sub-title" data-i18n="subWind">ลม (Wind rose)</p>
+      <label class="check"><input type="checkbox" data-field="showWind"> <span data-i18n="showWind">แสดงทิศลม</span></label>
+      <label class="check" data-show-when="showWind"><input type="checkbox" data-field="windFlow"> <span data-i18n="windFlow">ลมไหล (effect)</span></label>
+      <div class="season-row" data-show-when="showWind" role="group" aria-label="Season">
+        <button type="button" class="chip" data-season="225"><span data-i18n="seasonRain">ฤดูฝน · ลม SW</span></button>
+        <button type="button" class="chip" data-season="45"><span data-i18n="seasonCool">ฤดูหนาว · ลม NE</span></button>
+      </div>
+      <label data-show-when="showWind"><span data-i18n="windBearing">ลมพัดจากทิศ (ลมประจำ)</span>
+        <select data-field="windBearing"><option value="0">N เหนือ</option><option value="45">NE ตะวันออกเฉียงเหนือ</option><option value="90">E ตะวันออก</option><option value="135">SE ตะวันออกเฉียงใต้</option><option value="180">S ใต้</option><option value="225">SW ตะวันตกเฉียงใต้</option><option value="270">W ตะวันตก</option><option value="315">NW ตะวันตกเฉียงเหนือ</option></select></label>
+
+      <p class="sub-title" data-i18n="subNoise">เสียงจากถนน (Noise)</p>
+      <label class="check"><input type="checkbox" data-field="showNoise"> <span data-i18n="showNoise">แสดงระดับเสียงในที่ดิน (dB)</span></label>
+      <div class="grid-2" data-show-when="showNoise">
+        <label><span data-i18n="noiseMain">ถนนหลัก (ที่ 10 ม.)</span>
+          <select data-field="noiseMain"><option value="60">60 dB · ซอยชุมชน</option><option value="66">66 dB · ถนนรอง</option><option value="72">72 dB · ถนนหลัก</option><option value="78">78 dB · ถนนใหญ่รถหนาแน่น</option></select></label>
+        <label><span data-i18n="noiseSec">ถนนรอง (ที่ 10 ม.)</span>
+          <select data-field="noiseSec"><option value="55">55 dB · ซอยเงียบ</option><option value="62">62 dB · ถนนรอง</option><option value="68">68 dB · ถนนรองคับคั่ง</option></select></label>
+        <div class="span-2 noise-legend" aria-hidden="true"><span>45</span><i></i><span>82 dB(A)</span></div>
+        <div class="span-2 noise-readout" id="noiseReadout" aria-live="polite"></div>
+      </div>
+    
+      <p class="sub-title" data-i18n="subHeat">ความร้อนที่ผนังอาคาร</p>
+      <label class="check"><input type="checkbox" data-field="showHeat"> <span data-i18n="showHeat">ระบายสีผนังตามความร้อนจากแดด</span></label>
+      <div class="heat-legend" data-show-when="showHeat" aria-hidden="true"><span data-i18n="heatLow">น้อย</span><i></i><span data-i18n="heatHigh">มาก</span></div>
+      <p class="muted" data-show-when="showHeat" data-i18n="heatNote">รวมแสงแดดตั้งแต่ 06:00–18:00 ตามฤดูที่เลือก หลังคาแสดงเป็นสีเทา</p>
+
+      <p class="sub-title" data-i18n="subExport">บันทึกภาพ (PNG)</p>
+      <div class="grid-2">
+        <button type="button" class="btn btn-ghost" id="btnSave3d" data-i18n="save3d">บันทึกภาพ 3D</button>
+        <button type="button" class="btn btn-ghost" id="btnSave2d" data-i18n="save2d">บันทึกผัง 2D</button>
+      </div>
+      <p class="sub-title" data-i18n="subPeriods">ภาพ 3 ช่วงเวลา (แดด + ลม)</p>
+      <div class="grid-2" id="periodPick">
+        <label><span>1</span><select data-period="0" aria-label="period 1"></select></label>
+        <label><span>2</span><select data-period="1" aria-label="period 2"></select></label>
+        <label><span>3</span><select data-period="2" aria-label="period 3"></select></label>
+      </div>
+      <button type="button" class="btn" id="btnPeriods" data-i18n="periodBtn">สร้างภาพ 3 ช่วงเวลา</button>
+      <p class="muted" data-i18n="periodNote">ใช้ฤดูกาลและทิศลมที่เลือกอยู่ตอนนี้</p>
+    </details>
+
+    <details class="card" open>
+      <summary data-i18n="secBuilding">ขนาดอาคาร & ระยะร่น</summary>
+      <p class="sub-title first" data-i18n="presetsLabel">รูปแบบอาคาร</p>
+      <div class="preset-grid" role="group" aria-label="Building type">
+        <button type="button" class="chip" data-category="house"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span data-i18n="catHouse">บ้าน 2 ชั้น</span></button>
+        <button type="button" class="chip" data-category="townhome"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="7" height="14" rx="1"/><rect x="14" y="7" width="7" height="14" rx="1"/></svg><span data-i18n="catTownhome">ทาวน์โฮม</span></button>
+        <button type="button" class="chip" data-category="shophouse"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-2-5H5z"/><path d="M5 9v12h14V9"/></svg><span data-i18n="catShophouse">อาคารพาณิชย์</span></button>
+        <button type="button" class="chip" data-category="condo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg><span data-i18n="catCondo">คอนโด/หอพัก</span></button>
+      </div>
+      <label class="check"><input type="checkbox" data-field="showBuilding"> <span data-i18n="showBuilding">แสดงอาคารหลัก</span></label>
+      <label class="check"><input type="checkbox" data-field="showDims"> <span data-i18n="showDims">แสดงตัวเลขระยะร่น</span></label>
+      <div class="grid-2">
+        <label class="span-2"><span data-i18n="bldgBearing">แนวการวางอาคาร (ด้านหน้าอาคารหันไป)</span>
+          <select data-field="bldgBearing">
+            <option value="0">N เหนือ</option><option value="45">NE ตะวันออกเฉียงเหนือ</option><option value="90">E ออก</option><option value="135">SE ตะวันออกเฉียงใต้</option>
+          <option value="180">S ใต้</option><option value="225">SW ตะวันตกเฉียงใต้</option><option value="270">W ตก</option><option value="315">NW ตะวันตกเฉียงเหนือ</option>
+          </select></label>
+        <label data-show-when="buildingCategory=house|condo"><span data-i18n="bWidth">อาคาร กว้าง (ม.)</span>
+          <input type="number" step="0.5" min="3" data-field="bWidth"></label>
+        <label data-show-when="buildingCategory=house|condo"><span data-i18n="bDepth">อาคาร ยาว (ม.)</span>
+          <input type="number" step="0.5" min="3" data-field="bDepth"></label>
+        <label data-show-when="buildingCategory=townhome|shophouse"><span data-i18n="unitWidth">กว้างคูหา (≥4.0)</span>
+          <input type="number" step="0.1" min="4" data-field="unitWidth"></label>
+        <label data-show-when="buildingCategory=townhome|shophouse"><span data-i18n="unitDepth">ลึกคูหา (≥4.0)</span>
+          <input type="number" step="0.1" min="4" data-field="unitDepth"></label>
+        <label class="span-2" data-show-when="buildingCategory=townhome|shophouse"><span data-i18n="rowUnits">จำนวนคูหา (≤10)</span>
+          <input type="number" step="1" min="1" max="10" data-field="rowUnits"></label>
+        <label data-show-when="buildingCategory=house|condo"><span data-i18n="shape">รูปทรง</span>
+          <select data-field="buildingShape">
+            <option value="straight">▬</option><option value="L">┗ L</option><option value="U">⊔ U</option>
+          </select></label>
+        <label><span data-i18n="height">ความสูงอาคาร (ม.)</span>
+          <input type="number" step="0.1" min="2" data-field="height"></label>
+
+        <label><span data-i18n="frontSetback">ร่นหน้า (จากกึ่งกลางถนน)</span>
+          <input type="number" step="0.5" min="0" data-field="frontSetback"></label>
+        <label><span data-i18n="leftSetback">ร่นซ้าย (จากเขต)</span>
+          <input type="number" step="0.5" min="0" data-field="leftSetback"></label>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn" data-action="center"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg><span data-i18n="center">จัดกึ่งกลาง</span></button>
+        <button type="button" class="btn btn-primary" data-action="fit"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6M4 4v6M20 4h-6M20 4v6M4 20h6M4 20v-6M20 20h-6M20 20v-6"/></svg><span data-i18n="fit">ปรับให้ผ่านเกณฑ์</span></button>
+      </div>
+      <p class="sub-title" data-i18n="secRoof">หลังคา</p>
+      <label class="check"><input type="checkbox" data-field="roofVisible"> <span data-i18n="roofVisible">แสดงหลังคา</span></label>
+      <label data-show-when="roofVisible"><span data-i18n="roofType">ชนิดหลังคา</span>
+        <select data-field="roofType">
+          <option value="gable" data-i18n="roofGable">จั่ว (Gable)</option>
+          <option value="hip" data-i18n="roofHip">ปั้นหยา (Hip)</option>
+          <option value="flat" data-i18n="roofFlat">ดาดฟ้า / Flat slab</option>
+          <option value="shed" data-i18n="roofShed">หมาแหงน (Shed)</option>
+        </select></label>
+    </details>
+
+    <details class="card" data-show-when="buildingCategory=townhome|shophouse">
+      <summary data-i18n="secRow">คูหา & แถวต่อเนื่อง</summary>
+      <div class="grid-2">
+        <label><span data-i18n="rowGap">ช่องว่างกลุ่ม (≥4.0)</span>
+          <input type="number" step="0.5" min="0" data-field="rowGap"></label>
+        <label class="span-2" data-show-when="buildingCategory=shophouse"><span data-i18n="floorAboveWalk">พื้นสูงจากทางเท้า (ซม. ≥10)</span>
+          <input type="number" step="1" min="0" data-field="floorAboveWalk"></label>
+        <label class="span-2" data-show-when="buildingCategory=shophouse"><span data-i18n="floorAboveRoad">พื้นสูงจากกลางถนน (ซม. ≥25)</span>
+          <input type="number" step="1" min="0" data-field="floorAboveRoad"></label>
+      </div>
+      <label class="check"><input type="checkbox" data-field="isCornerUnit"> <span data-i18n="cornerUnit">แปลงหัวมุม (ห่างเขตอย่างน้อย 2 ม.)</span></label>
+      <label class="check" data-show-when="buildingCategory=shophouse"><input type="checkbox" data-field="frontPublicRoad"> <span data-i18n="frontPublicRoad">ติดถนนสาธารณะ</span></label>
+      <label class="check" data-show-when="buildingCategory=shophouse"><input type="checkbox" data-field="shophouseResi"> <span data-i18n="shophouseResi">ใช้อยู่อาศัยร่วมด้วย (OSR 30%)</span></label>
+    </details>
+
+    <details class="card">
+      <summary data-i18n="secWall">ผนังติดเขต & ชายคา</summary>
+      <label><span data-i18n="wallType">ชนิดผนังติดเขต</span>
+        <select data-field="neighborWallType">
+          <option value="opening" data-i18n="wallOpening">ผนังมีช่องเปิด</option>
+          <option value="solid" data-i18n="wallSolid">ผนังทึบ</option>
+          <option value="glassblock" data-i18n="wallGlass">ผนังทึบติดบล็อกแก้ว</option>
+          <option value="zero" data-i18n="wallZero">ชิดเขตที่ดิน (&lt;0.5 ม.)</option>
+        </select></label>
+      <div class="grid-2" data-show-when="neighborWallType=glassblock">
+        <label><span data-i18n="gbThick">หนา (ซม. ≥9)</span><input type="number" step="0.5" data-field="gbThick"></label>
+        <label><span data-i18n="gbHeight">สูง (ม. >1.8)</span><input type="number" step="0.05" data-field="gbHeight"></label>
+        <label class="span-2"><span data-i18n="gbArea">พื้นที่ (% ≤10)</span><input type="number" step="1" data-field="gbAreaPct"></label>
+      </div>
+      <label class="check" data-show-when="neighborWallType=zero"><input type="checkbox" data-field="neighborConsent"> <span data-i18n="consent">มีหนังสือยินยอมจากเจ้าของที่ดินข้างเคียง</span></label>
+      <div class="grid-2">
+        <label><span data-i18n="eaves">ชายคายื่น (ม.)</span><input type="number" step="0.05" min="0" data-field="eavesProj"></label>
+        <label><span data-i18n="eaveHeight">ชายคาสูงจากทางเท้า (ม.)</span><input type="number" step="0.05" min="0" data-field="eaveHeight"></label>
+        <label class="check"><input type="checkbox" data-field="hasGutter"> <span data-i18n="gutter">มีรางน้ำฝน</span></label>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- RIGHT: visualisation + rules -->
+  <section class="stage" aria-label="Visualisation">
+    <div class="stage-top">
+    <div class="view-toggle">
+      <div class="seg" role="group">
+        <button type="button" class="seg-btn is-active" data-view="3d" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12 3 7"/></svg><span data-i18n="view3d">3D</span></button>
+        <button type="button" class="seg-btn" data-view="2d" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h18M12 3v18"/></svg><span data-i18n="view2d">2D แปลน</span></button>
+        <button type="button" class="seg-btn" data-view="split" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span data-i18n="viewSplit">3D + 2D</span></button>
+      </div>
+      <button type="button" class="btn btn-ghost" id="btnResetCam"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span data-i18n="resetCam">รีเซ็ตมุมมอง</span></button>
+    </div>
+
+    <div class="viewports" data-mode="3d">
+      <div class="vp vp-3d" id="vp3d">
+        <div id="canvas3d" class="canvas-host" aria-label="3D model"></div>
+        <div class="vp-tools" id="vpTools">
+          <div class="vt-row vt-main">
+            <button type="button" class="btn vt-btn vt-toggle" id="btnTools" aria-expanded="false" aria-controls="vtMore"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span data-i18n="toolsBtn">เครื่องมือ</span></button>
+            <button type="button" class="btn vt-btn" id="btnOrbit" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg><span data-i18n="autoOrbit">หมุนรอบที่ดิน</span></button>
+            <button type="button" class="btn vt-btn" id="btnFull" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span data-i18n="fullscreen">เต็มจอ</span></button>
+          </div>
+          <div class="vt-more" id="vtMore">
+          <div class="vt-row">
+            <label class="check vt-chk"><input type="checkbox" data-field="showSun"> <span data-i18n="subSun">แดด</span></label>
+            <label class="check vt-chk"><input type="checkbox" data-field="showWind"> <span data-i18n="subWind">ลม</span></label>
+            <label class="check vt-chk"><input type="checkbox" data-field="showDims"> <span data-i18n="dimsShort">ระยะร่น</span></label>
+          </div>
+          <div class="vt-row vt-sun" data-show-when="showSun">
+            <label class="vt-slider"><span><span data-i18n="sunTime">เวลา</span> <b data-sunlabel>10:00</b></span>
+              <input type="range" min="5" max="19" step="0.25" data-field="sunHour" aria-label="sun time"></label>
+            <button type="button" class="btn vt-btn" id="btnSunPlay" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M7 4v16l13-8z"/></svg><span data-i18n="sunPlay">เล่นแดด</span></button>
+            <select data-field="sunDecl" aria-label="season"><option value="23.4">มิ.ย.</option><option value="0">มี.ค./ก.ย.</option><option value="-23.4">ธ.ค.</option></select>
+          </div>
+          <div class="vt-row" data-show-when="showWind">
+            <label class="check vt-chk"><input type="checkbox" data-field="windFlow"> <span data-i18n="windFlow">ลมไหล (effect)</span></label>
+          </div>
+          </div>
+          <div class="vt-row" id="pickNoteRow" hidden><span class="vt-note" id="pickNote"></span></div>
+        </div>
+        <span class="status-chip is-pass" id="statusChip" role="status"></span>
+        <p class="hint" data-i18n="hint3d">ลากเพื่อหมุน • เลื่อนเพื่อซูม</p>
+      </div>
+      <div class="vp vp-2d">
+        <canvas id="canvas2d" aria-label="2D plan"></canvas>
+        <p class="hint" data-i18n="hint2d">เส้นประคือระยะร่นตามกฎหมาย</p>
+      </div>
+    </div>
+    </div>
+
+    <div class="rules-bar">
+      <button type="button" class="btn btn-ghost" id="btnToggleRules" aria-expanded="false" data-state="closed">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span data-i18n="expandAll">ขยายทั้งหมด</span>
+      </button>
+    </div>
+    <div class="rules" id="rules" aria-live="polite"></div>
+
+    <footer class="footnote" data-i18n="footer">SetbackLab • อ้างอิง พ.ร.บ. ควบคุมอาคาร พ.ศ. 2522 และกฎกระทรวง ฉบับที่ 55 (พ.ศ. 2543) • ใช้เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางกฎหมาย</footer>
+  </section>
+</main>
+
+<script src="js/law.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/plan2d.js"></script>
+<script src="js/scene3d.js"></script>
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
